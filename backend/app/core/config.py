@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,7 +16,7 @@ class Settings(BaseSettings):
 
     database_url: str = Field(alias="DATABASE_URL")
     jwt_secret_key: str = Field(alias="JWT_SECRET_KEY")
-    jwt_refresh_secret_key: str = Field(alias="JWT_REFRESH_SECRET_KEY")
+    jwt_refresh_secret_key: str | None = Field(default=None, alias="JWT_REFRESH_SECRET_KEY")
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
     refresh_token_expire_days: int = 7
@@ -24,6 +24,12 @@ class Settings(BaseSettings):
     aws_region: str = Field(default="us-east-1", alias="AWS_REGION")
     aws_s3_bucket: str = Field(alias="AWS_S3_BUCKET")
     aws_sns_topic_arn: str = Field(alias="AWS_SNS_TOPIC_ARN")
+
+    @model_validator(mode="after")
+    def _fallback_refresh_secret(self) -> "Settings":
+        if not self.jwt_refresh_secret_key:
+            self.jwt_refresh_secret_key = self.jwt_secret_key
+        return self
 
 
 @lru_cache

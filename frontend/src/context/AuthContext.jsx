@@ -26,8 +26,13 @@ export function AuthProvider({ children }) {
     boot()
   }, [])
 
-  const login = async (email, password) => {
+  const login = async (email, password, expectedRole = null) => {
     const response = await api.post('/auth/login', { email, password })
+    if (expectedRole && response.data.role !== expectedRole) {
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
+      throw new Error('Role mismatch')
+    }
     setTokens(response.data.access_token, response.data.refresh_token)
     const meResponse = await api.get('/auth/me')
     setUser(meResponse.data)
