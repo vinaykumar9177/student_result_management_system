@@ -17,6 +17,5 @@ class Subject(TimestampMixin, Base):
     semester_number: Mapped[int] = mapped_column(Integer, nullable=False)
 
     course = relationship("Course", back_populates="subjects")
-    faculty_assignments = relationship("FacultySubject", back_populates="subject", cascade="all, delete-orphan")
     examinations = relationship("Examination", back_populates="subject", cascade="all, delete-orphan")
     marks = relationship("Mark", back_populates="subject")

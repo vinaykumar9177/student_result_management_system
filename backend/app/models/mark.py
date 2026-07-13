@@ -20,10 +20,10 @@ class Mark(TimestampMixin, Base):
     examination_id: Mapped[int] = mapped_column(ForeignKey("examinations.id", ondelete="CASCADE"), nullable=False)
     marks_obtained: Mapped[float] = mapped_column(Float, nullable=False)
     max_marks: Mapped[float] = mapped_column(Float, nullable=False)
-    entered_by_faculty_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
+    entered_by_admin_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
     submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     student = relationship("Student", back_populates="marks")
     subject = relationship("Subject", back_populates="marks")
     examination = relationship("Examination", back_populates="marks")
-    entered_by_faculty = relationship("User")
+    entered_by_admin = relationship("User")

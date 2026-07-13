@@ -1,50 +1,74 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { GraduationCap, ShieldCheck, ArrowRight } from 'lucide-react'
 
 const loginCards = [
   {
     role: 'student',
-    title: 'Student Login',
-    description: 'View results, profile details, and notices.',
+    title: 'Student Portal',
+    description: 'Access your academic transcripts, performance trends, and manage your student profile details.',
     to: '/login/student',
-  },
-  {
-    role: 'teacher',
-    title: 'Teacher Login',
-    description: 'Enter marks and manage assigned students.',
-    to: '/login/teacher',
+    icon: GraduationCap,
+    gradient: 'from-blue-500/10 to-indigo-500/10 hover:from-blue-500/20 hover:to-indigo-500/20',
+    iconColor: 'text-blue-600',
+    badge: 'Student Access',
   },
   {
     role: 'admin',
-    title: 'Admin Login',
-    description: 'Manage users, departments, logs, and analytics.',
+    title: 'Administrator Portal',
+    description: 'Manage students, input grades, review operational audits, and view system metrics.',
     to: '/login/admin',
+    icon: ShieldCheck,
+    gradient: 'from-slate-900/5 to-slate-800/10 hover:from-slate-950/10 hover:to-slate-800/15',
+    iconColor: 'text-slate-800',
+    badge: 'Staff Access',
   },
 ]
 
 export default function LoginHub() {
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="glass-panel w-full max-w-5xl p-8 md:p-10">
+    <div className="flex min-h-screen items-center justify-center p-4 md:p-8">
+      <div className="glass-panel w-full max-w-4xl p-8 md:p-12 animate-slide-up">
         <div className="max-w-2xl">
-          <div className="text-sm uppercase tracking-[0.3em] text-brand-700">Student Result System</div>
-          <h1 className="mt-3 text-3xl font-semibold md:text-4xl">Choose your login</h1>
-          <p className="mt-2 text-sm text-slate-600 md:text-base">Pick the portal that matches your role. Each login keeps the dashboards separate for students, teachers, and admins.</p>
+          <div className="text-xs font-bold uppercase tracking-[0.25em] text-brand-700">Academic Hub</div>
+          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">
+            Student Result System
+          </h1>
+          <p className="mt-3 text-sm leading-relaxed text-slate-500 md:text-base">
+            Welcome to the unified educational management platform. Please select the portal corresponding to your role to authenticate securely.
+          </p>
         </div>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {loginCards.map((card) => (
-            <Link
-              key={card.role}
-              to={card.to}
-              className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm transition hover:-translate-y-1 hover:border-brand-300 hover:shadow-lg"
-            >
-              <div className="text-xs uppercase tracking-[0.28em] text-brand-700">{card.role}</div>
-              <h2 className="mt-3 text-2xl font-semibold text-slate-900">{card.title}</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-600">{card.description}</p>
-              <div className="mt-6 inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white">Continue</div>
-            </Link>
-          ))}
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
+          {loginCards.map((card) => {
+            const Icon = card.icon
+            return (
+              <Link
+                key={card.role}
+                to={card.to}
+                className={`group relative flex flex-col justify-between rounded-2xl border border-slate-100 bg-white p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-200/80 hover:shadow-md`}
+              >
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-500">
+                      {card.badge}
+                    </span>
+                  </div>
+                  <div className={`mt-6 inline-flex rounded-xl p-3 bg-gradient-to-br ${card.gradient} transition-colors`}>
+                    <Icon className={`h-8 w-8 ${card.iconColor}`} />
+                  </div>
+                  <h2 className="mt-6 text-2xl font-bold tracking-tight text-slate-900 group-hover:text-brand-700 transition-colors">
+                    {card.title}
+                  </h2>
+                  <p className="mt-3 text-sm leading-relaxed text-slate-500">{card.description}</p>
+                </div>
+                <div className="mt-8 flex items-center gap-2 text-sm font-bold text-brand-700 group-hover:text-brand-800">
+                  <span>Proceed to login</span>
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </div>
+              </Link>
+            )
+          })}
         </div>
       </div>
     </div>

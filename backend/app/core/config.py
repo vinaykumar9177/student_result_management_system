@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
     refresh_token_expire_days: int = 7
+    password_reset_token_expire_minutes: int = 15
+    frontend_url: str = Field(default="http://localhost:5173", alias="FRONTEND_URL")
 
     aws_region: str = Field(default="us-east-1", alias="AWS_REGION")
     aws_s3_bucket: str = Field(alias="AWS_S3_BUCKET")

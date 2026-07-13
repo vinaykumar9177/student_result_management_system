@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext'
 
 const loginPathByRole = {
   admin: '/login/admin',
-  faculty: '/login/teacher',
   student: '/login/student',
 }
 
@@ -19,6 +18,10 @@ export default function ProtectedRoute({ allowedRoles, children }) {
   if (!user) {
     const loginPath = allowedRoles?.length ? loginPathByRole[allowedRoles[0]] || '/login' : '/login'
     return <Navigate to={loginPath} replace state={{ from: location }} />
+  }
+
+  if (user.must_reset_password && location.pathname !== '/force-password-reset') {
+    return <Navigate to="/force-password-reset" replace />
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {

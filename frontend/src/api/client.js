@@ -38,13 +38,21 @@ api.interceptors.response.use(
     if (!refreshToken) {
       localStorage.removeItem('access_token')
       localStorage.removeItem('refresh_token')
+      window.dispatchEvent(new Event('auth-logout'))
       return Promise.reject(error)
     }
 
-    const refreshResponse = await authApi.post('/auth/refresh', { refresh_token: refreshToken })
-    setTokens(refreshResponse.data.access_token, refreshResponse.data.refresh_token)
-    originalRequest.headers.Authorization = `Bearer ${refreshResponse.data.access_token}`
-    return api(originalRequest)
+    try {
+      const refreshResponse = await authApi.post('/auth/refresh', { refresh_token: refreshToken })
+      setTokens(refreshResponse.data.access_token, refreshResponse.data.refresh_token)
+      originalRequest.headers.Authorization = `Bearer ${refreshResponse.data.access_token}`
+      return api(originalRequest)
+    } catch (refreshError) {
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
+      window.dispatchEvent(new Event('auth-logout'))
+      return Promise.reject(refreshError)
+    }
   },
 )
 

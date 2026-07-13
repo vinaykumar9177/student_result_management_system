@@ -2,7 +2,7 @@ from app.models.base import Base
 from app.models.course import Course
 from app.models.department import Department
 from app.models.examination import Examination
-from app.models.faculty_subject import FacultySubject
+from app.models.password_reset_token import PasswordResetToken
 from app.models.mark import Mark
 from app.models.notification import Notification
 from app.models.result import Result
@@ -16,7 +16,7 @@ __all__ = [
     "Course",
     "Department",
     "Examination",
-    "FacultySubject",
+    "PasswordResetToken",
     "Mark",
     "Notification",
     "Result",

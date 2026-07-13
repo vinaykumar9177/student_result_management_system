@@ -11,7 +11,6 @@ from app.models.base import Base, TimestampMixin
 
 class UserRole(str, Enum):
     admin = "admin"
-    faculty = "faculty"
     student = "student"
 
 
@@ -23,6 +22,7 @@ class User(TimestampMixin, Base):
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[UserRole] = mapped_column(SQLEnum(UserRole, name="user_role"), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    must_reset_password: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     updated_at: Mapped[dt.datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),

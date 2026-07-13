@@ -12,3 +12,9 @@ class DepartmentRead(DepartmentCreate):
     id: int
 
     model_config = {"from_attributes": True}
+
+
+class DepartmentUpdate(BaseModel):
+    name: str | None = None
+    code: str | None = None
+

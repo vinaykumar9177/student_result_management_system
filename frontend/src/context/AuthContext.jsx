@@ -24,19 +24,30 @@ export function AuthProvider({ children }) {
       }
     }
     boot()
+
+    const handleAuthLogout = () => {
+      setUser(null)
+    }
+    window.addEventListener('auth-logout', handleAuthLogout)
+    return () => window.removeEventListener('auth-logout', handleAuthLogout)
   }, [])
 
   const login = async (email, password, expectedRole = null) => {
-    const response = await api.post('/auth/login', { email, password })
-    if (expectedRole && response.data.role !== expectedRole) {
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('refresh_token')
-      throw new Error('Role mismatch')
+    try {
+      const response = await api.post('/auth/login', { email, password })
+      if (expectedRole && response.data.role !== expectedRole) {
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+        throw new Error('Role mismatch')
+      }
+      setTokens(response.data.access_token, response.data.refresh_token)
+      const meResponse = await api.get('/auth/me')
+      setUser(meResponse.data)
+      return { token: response.data, user: meResponse.data }
+    } catch (error) {
+      const detail = error.response?.data?.detail
+      throw new Error(detail || error.message || 'Invalid credentials')
     }
-    setTokens(response.data.access_token, response.data.refresh_token)
-    const meResponse = await api.get('/auth/me')
-    setUser(meResponse.data)
-    return response.data
   }
 
   const logout = () => {
@@ -45,7 +56,14 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
-  const value = useMemo(() => ({ user, setUser, loading, login, logout }), [user, loading])
+  const updateMustResetPassword = (status) => {
+    setUser((prev) => (prev ? { ...prev, must_reset_password: status } : null))
+  }
+
+  const value = useMemo(
+    () => ({ user, setUser, loading, login, logout, updateMustResetPassword }),
+    [user, loading],
+  )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

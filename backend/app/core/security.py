@@ -11,6 +11,27 @@ from app.core.config import get_settings
 settings = get_settings()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+# Workaround for bcrypt >= 4.0.0 and passlib compatibility
+try:
+    import passlib.handlers.bcrypt
+    original_calc_checksum = passlib.handlers.bcrypt._BcryptBackend._calc_checksum
+    def safe_calc_checksum(self, secret):
+        if isinstance(secret, str):
+            secret_bytes = secret.encode("utf-8")
+        else:
+            secret_bytes = secret
+        if len(secret_bytes) > 72:
+            secret_bytes = secret_bytes[:72]
+        if isinstance(secret, str):
+            secret = secret_bytes.decode("utf-8", errors="ignore")
+        else:
+            secret = secret_bytes
+        return original_calc_checksum(self, secret)
+    passlib.handlers.bcrypt._BcryptBackend._calc_checksum = safe_calc_checksum
+except Exception:
+    pass
+
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
@@ -39,3 +60,20 @@ def decode_token(token: str, secret_key: str) -> dict[str, Any]:
         return jwt.decode(token, secret_key, algorithms=[settings.jwt_algorithm])
     except JWTError as exc:
         raise ValueError("Invalid token") from exc
+
+
+def generate_temporary_password() -> str:
+    import secrets
+    alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*"
+    return "".join(secrets.choice(alphabet) for _ in range(12))
+
+
+def generate_reset_token() -> str:
+    import secrets
+    return secrets.token_urlsafe(32)
+
+
+def hash_reset_token(token: str) -> str:
+    import hashlib
+    return hashlib.sha256(token.encode()).hexdigest()
+

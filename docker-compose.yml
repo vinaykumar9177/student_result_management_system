@@ -20,6 +20,8 @@ services:
       - ./backend:/app
     ports:
       - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+psycopg://postgres:postgres@db:5432/student_results
     depends_on:
       - db
 
