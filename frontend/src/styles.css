@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,46 +10,81 @@
 
 body {
   margin: 0;
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-  background:
-    radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(15, 23, 42, 0.08), transparent 26%),
-    #f8fafc;
+  font-family: 'Plus Jakarta Sans', Inter, ui-sans-serif, system-ui, sans-serif;
+  background-color: #f6f5fc;
+  background-image: 
+    linear-gradient(to right, rgba(99, 102, 241, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(99, 102, 241, 0.05) 1px, transparent 1px),
+    linear-gradient(rgba(246, 245, 252, 0.90), rgba(246, 245, 252, 0.90)),
+    url('/educational_background.png');
+  background-size: 32px 32px, 32px 32px, cover, cover;
+  background-position: center, center, center, center;
+  background-repeat: repeat, repeat, no-repeat, no-repeat;
+  background-attachment: scroll, scroll, fixed, fixed;
   color: #0f172a;
+  min-height: 100vh;
 }
 
-.glass-panel {
-  @apply rounded-2xl border border-white/40 bg-white/70 shadow-glass backdrop-blur-md transition-all duration-300;
-}
+@layer components {
+  .heading-premium {
+    font-family: 'Outfit', sans-serif;
+  }
 
-.glass-panel-hover {
-  @apply hover:border-white/60 hover:bg-white/80 hover:shadow-soft;
-}
+  .glass-panel {
+    @apply rounded-2xl border border-slate-200/50 bg-white/70 backdrop-blur-lg transition-all duration-300;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05), 0 10px 30px -10px rgba(0, 0, 0, 0.05), 0 20px 50px -12px rgba(0, 0, 0, 0.07);
+  }
 
-.card-premium {
-  @apply rounded-2xl border border-slate-100 bg-white p-6 shadow-sm hover:shadow-md transition-all duration-300;
-}
+  .glass-panel-hover {
+    @apply hover:border-brand-500/20 hover:bg-white/90;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .glass-panel-hover:hover {
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 12px 40px -4px rgba(15, 23, 42, 0.08);
+  }
 
-.input-premium {
-  @apply w-full rounded-xl border border-slate-200 bg-white/60 px-4 py-3 text-slate-800 transition-all duration-200 placeholder:text-slate-400 focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20;
-}
+  .card-premium {
+    @apply rounded-2xl border border-slate-100 bg-white p-6 transition-all duration-300 hover:border-slate-200/80;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05), 0 10px 30px -10px rgba(0, 0, 0, 0.05), 0 20px 50px -12px rgba(0, 0, 0, 0.07);
+  }
+  .card-premium:hover {
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 12px 40px -4px rgba(15, 23, 42, 0.08);
+  }
 
-.btn-premium {
-  @apply inline-flex items-center justify-center rounded-xl bg-brand-500 px-6 py-3 font-semibold text-white transition-all duration-200 hover:bg-brand-700 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
+  .input-premium {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-slate-800 transition-all duration-200 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10 hover:border-slate-300;
+  }
+
+  .btn-premium {
+    @apply inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 px-5 py-2.5 font-semibold text-white shadow-sm transition-all duration-200 hover:from-brand-700 hover:to-brand-600 hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 text-sm;
+  }
+
+  .btn-premium-secondary {
+    @apply inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-2.5 font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:bg-slate-50 hover:text-slate-900 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 text-sm;
+  }
+
+  .badge-premium {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background: #e2e8f0;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #cbd5e1;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
+

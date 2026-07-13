@@ -578,46 +578,5 @@ def analytics(db: Session = Depends(get_db)):
     )
 
 
-class LogEntry(BaseModel):
-    timestamp: str
-    level: str
-    message: str
 
-
-class LogsResponse(BaseModel):
-    entries: list[LogEntry]
-
-
-@router.get("/logs", response_model=LogsResponse)
-def logs() -> LogsResponse:
-    # return last 50 lines of system logs (simulated)
-    mock_entries = []
-    events = [
-        ("INFO", "Database connection established successfully."),
-        ("INFO", "FastAPI app started and listening on port 8000."),
-        ("INFO", "AWS S3 client initialized for bucket."),
-        ("INFO", "AWS SNS notification topic verified."),
-        ("INFO", "Admin user authenticated."),
-        ("INFO", "User login request received."),
-        ("INFO", "JWT token issued successfully."),
-        ("INFO", "New department created."),
-        ("INFO", "New course added: Computer Science."),
-        ("INFO", "Student accounts provisioned via CSV bulk upload."),
-        ("INFO", "Notification sent via SNS to student: Welcome to Portal."),
-        ("INFO", "Mark posted for student."),
-        ("INFO", "Published semester results successfully."),
-        ("WARNING", "Slow query detected on results aggregation."),
-        ("INFO", "S3 pre-signed URL generated for download."),
-        ("INFO", "Result computation engine executed for semester."),
-    ]
-    for i in range(50):
-        evt = events[i % len(events)]
-        mock_entries.append(
-            LogEntry(
-                timestamp=(dt.datetime.now() - dt.timedelta(seconds=(50 - i) * 10)).isoformat(),
-                level=evt[0],
-                message=f"[Line {i}] {evt[1]}",
-            )
-        )
-    return LogsResponse(entries=mock_entries)
 

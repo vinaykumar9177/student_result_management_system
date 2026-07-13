@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { api } from '../../api/client'
 import DataTable from '../../components/DataTable'
 import toast from 'react-hot-toast'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   FileSpreadsheet,
   PlusCircle,
@@ -12,6 +13,10 @@ import {
   CheckCircle,
   Layers,
   Award,
+  UploadCloud,
+  FileText,
+  X,
+  Loader2,
 } from 'lucide-react'
 
 const emptyForm = {
@@ -172,193 +177,242 @@ export default function AdminMarksPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Marks Management</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 heading-premium">Marks Management</h1>
           <p className="text-sm text-slate-500">Record individual subject grades and execute official result calculations.</p>
         </div>
         <button
           onClick={loadAll}
-          className="btn-premium inline-flex gap-2 items-center text-xs font-semibold py-2 px-4 shadow-sm"
+          className="btn-premium-secondary inline-flex gap-2 items-center"
         >
           <RefreshCw className="h-4 w-4" />
-          Refresh
+          <span>Refresh</span>
         </button>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Post Student Score / Bulk Upload */}
-        <div className="glass-panel p-6 space-y-4">
+        <div className="glass-panel p-6 space-y-5 bg-white/70 border-slate-200/50">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
-              <span className="rounded-xl border p-2 text-indigo-600 bg-indigo-50 border-indigo-100">
+              <span className="rounded-xl border border-indigo-100 bg-indigo-50 p-2 text-indigo-600">
                 <PlusCircle className="h-4 w-4" />
               </span>
-              <h3 className="text-base font-bold text-slate-800">Post Scores</h3>
+              <h3 className="text-sm font-bold text-slate-800 heading-premium">Post Scores</h3>
             </div>
             
             {/* Tab Toggles */}
-            <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+            <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-semibold relative">
               <button
                 type="button"
                 onClick={() => { setActiveTab('single'); setBulkResult(null); }}
-                className={`px-3 py-1 rounded-lg transition ${activeTab === 'single' ? 'bg-white shadow-sm text-brand-700' : 'text-slate-500 hover:text-slate-800'}`}
+                className={`px-3 py-1.5 rounded-lg transition relative z-10 ${activeTab === 'single' ? 'text-brand-700 font-bold' : 'text-slate-500 hover:text-slate-800'}`}
               >
+                {activeTab === 'single' && (
+                  <motion.span
+                    layoutId="active-marks-tab"
+                    className="absolute inset-0 bg-white shadow-sm rounded-lg"
+                    style={{ zIndex: -1 }}
+                  />
+                )}
                 Single
               </button>
               <button
                 type="button"
                 onClick={() => { setActiveTab('bulk'); }}
-                className={`px-3 py-1 rounded-lg transition ${activeTab === 'bulk' ? 'bg-white shadow-sm text-brand-700' : 'text-slate-500 hover:text-slate-800'}`}
+                className={`px-3 py-1.5 rounded-lg transition relative z-10 ${activeTab === 'bulk' ? 'text-brand-700 font-bold' : 'text-slate-500 hover:text-slate-800'}`}
               >
+                {activeTab === 'bulk' && (
+                  <motion.span
+                    layoutId="active-marks-tab"
+                    className="absolute inset-0 bg-white shadow-sm rounded-lg"
+                    style={{ zIndex: -1 }}
+                  />
+                )}
                 Bulk CSV
               </button>
             </div>
           </div>
 
-          {activeTab === 'single' ? (
-            <form onSubmit={handlePostMark} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-500">Student</label>
-                <select
-                  required
-                  className="input-premium bg-white"
-                  value={form.student_id}
-                  onChange={(e) => setForm((prev) => ({ ...prev, student_id: e.target.value }))}
-                >
-                  <option value="">Select student</option>
-                  {students.map((student) => (
-                    <option key={student.id} value={student.id}>
-                      {student.roll_number} - {student.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-500">Subject</label>
-                <select
-                  required
-                  className="input-premium bg-white"
-                  value={form.subject_id}
-                  onChange={(e) => setForm((prev) => ({ ...prev, subject_id: e.target.value }))}
-                >
-                  <option value="">Select subject</option>
-                  {subjects.map((subj) => (
-                    <option key={subj.id} value={subj.id}>
-                      {subj.code} - {subj.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-500">Examination Instance</label>
-                <select
-                  required
-                  className="input-premium bg-white"
-                  value={form.examination_id}
-                  onChange={(e) => setForm((prev) => ({ ...prev, examination_id: e.target.value }))}
-                >
-                  <option value="">Select exam</option>
-                  {exams.map((exam) => (
-                    <option key={exam.id} value={exam.id}>
-                      ID #{exam.id} - {exam.exam_type} ({exam.exam_date})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+          <AnimatePresence mode="wait">
+            {activeTab === 'single' ? (
+              <motion.form
+                key="single-score-form"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                transition={{ duration: 0.2 }}
+                onSubmit={handlePostMark}
+                className="space-y-4"
+              >
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500">Obtained Marks</label>
-                  <input
+                  <label className="text-xs font-semibold text-slate-500">Student</label>
+                  <select
                     required
-                    type="number"
-                    min="0"
-                    step="any"
-                    className="input-premium"
-                    placeholder="Obtained"
-                    value={form.marks_obtained}
-                    onChange={(e) => setForm((prev) => ({ ...prev, marks_obtained: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500">Max Marks</label>
-                  <input
-                    required
-                    type="number"
-                    min="1"
-                    className="input-premium"
-                    placeholder="Max"
-                    value={form.max_marks}
-                    onChange={(e) => setForm((prev) => ({ ...prev, max_marks: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              <button type="submit" className="btn-premium w-full mt-2">
-                Post Marks Record
-              </button>
-            </form>
-          ) : (
-            <div className="space-y-4">
-              <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 text-xs text-slate-500 leading-normal">
-                <span className="font-semibold text-slate-700">CSV Headers Required:</span>
-                <code className="block mt-1 font-mono text-[10px] bg-slate-200/50 p-1.5 rounded">
-                  roll_number, subject_code, exam_type, marks_obtained, max_marks, exam_date (optional)
-                </code>
-              </div>
-
-              <form onSubmit={handleBulkUpload} className="space-y-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500">Upload CSV File</label>
-                  <input
-                    required
-                    type="file"
-                    accept=".csv"
-                    className="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100"
-                    onChange={(e) => setBulkFile(e.target.files[0])}
-                  />
+                    className="input-premium bg-white"
+                    value={form.student_id}
+                    onChange={(e) => setForm((prev) => ({ ...prev, student_id: e.target.value }))}
+                  >
+                    <option value="">Select student</option>
+                    {students.map((student) => (
+                      <option key={student.id} value={student.id}>
+                        {student.roll_number} - {student.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={uploadingBulk || !bulkFile}
-                  className="btn-premium w-full mt-2 inline-flex items-center justify-center gap-1.5"
-                >
-                  {uploadingBulk ? 'Uploading...' : 'Upload Bulk Marks'}
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-500">Subject</label>
+                  <select
+                    required
+                    className="input-premium bg-white"
+                    value={form.subject_id}
+                    onChange={(e) => setForm((prev) => ({ ...prev, subject_id: e.target.value }))}
+                  >
+                    <option value="">Select subject</option>
+                    {subjects.map((subj) => (
+                      <option key={subj.id} value={subj.id}>
+                        {subj.code} - {subj.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-500">Examination Instance</label>
+                  <select
+                    required
+                    className="input-premium bg-white"
+                    value={form.examination_id}
+                    onChange={(e) => setForm((prev) => ({ ...prev, examination_id: e.target.value }))}
+                  >
+                    <option value="">Select exam</option>
+                    {exams.map((exam) => (
+                      <option key={exam.id} value={exam.id}>
+                        ID #{exam.id} - {exam.exam_type} ({exam.exam_date})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-500">Obtained Marks</label>
+                    <input
+                      required
+                      type="number"
+                      min="0"
+                      step="any"
+                      className="input-premium"
+                      placeholder="Obtained"
+                      value={form.marks_obtained}
+                      onChange={(e) => setForm((prev) => ({ ...prev, marks_obtained: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-500">Max Marks</label>
+                    <input
+                      required
+                      type="number"
+                      min="1"
+                      className="input-premium"
+                      placeholder="Max"
+                      value={form.max_marks}
+                      onChange={(e) => setForm((prev) => ({ ...prev, max_marks: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <button type="submit" className="btn-premium w-full mt-2 shadow-sm">
+                  Post Marks Record
                 </button>
-              </form>
+              </motion.form>
+            ) : (
+              <motion.div
+                key="bulk-score-form"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-4"
+              >
+                <div className="rounded-xl border border-slate-200/60 bg-slate-50/50 p-3.5 text-[11px] text-slate-500 leading-relaxed font-medium">
+                  <span className="font-bold text-slate-700">CSV Headers Required:</span>
+                  <code className="block mt-1.5 font-mono text-[9px] bg-white border border-slate-200 p-2 rounded-lg text-slate-600 select-all overflow-x-auto">
+                    roll_number, subject_code, exam_type, marks_obtained, max_marks, exam_date (optional)
+                  </code>
+                </div>
 
-              {bulkResult && (
-                <div className="mt-3 space-y-2 animate-fade-in">
-                  <div className="flex justify-between text-xs bg-emerald-50 border border-emerald-100 p-2.5 rounded-xl font-medium text-emerald-800">
-                    <span>Uploaded: {bulkResult.success_count}</span>
-                    <span>Failed: {bulkResult.errors?.length || 0}</span>
+                <form onSubmit={handleBulkUpload} className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-500">Upload CSV File</label>
+                    <div className="border-2 border-dashed border-slate-200 hover:border-brand-400 rounded-xl p-6 transition flex flex-col items-center justify-center cursor-pointer relative bg-white/50 hover:bg-white/80">
+                      <input
+                        required
+                        type="file"
+                        accept=".csv"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={(e) => setBulkFile(e.target.files[0])}
+                      />
+                      <UploadCloud className="h-8 w-8 text-slate-400 mb-2" />
+                      <span className="text-xs font-bold text-slate-600">
+                        {bulkFile ? bulkFile.name : 'Select or drop a CSV file'}
+                      </span>
+                      <span className="text-[10px] text-slate-400 mt-1">Accepts CSV files up to 5MB</span>
+                    </div>
                   </div>
 
-                  {bulkResult.errors && bulkResult.errors.length > 0 && (
-                    <div className="max-h-32 overflow-y-auto text-[10px] bg-red-50 border border-red-100 p-2.5 rounded-xl text-red-700 font-mono space-y-1">
-                      {bulkResult.errors.map((err, i) => (
-                        <div key={i}>{err}</div>
-                      ))}
+                  <button
+                    type="submit"
+                    disabled={uploadingBulk || !bulkFile}
+                    className="btn-premium w-full mt-2 inline-flex items-center justify-center gap-1.5"
+                  >
+                    {uploadingBulk ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Uploading CSV...</span>
+                      </>
+                    ) : (
+                      <span>Upload Bulk Marks</span>
+                    )}
+                  </button>
+                </form>
+
+                {bulkResult && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="space-y-2"
+                  >
+                    <div className="flex justify-between text-xs bg-emerald-50 border border-emerald-100 p-2.5 rounded-xl font-semibold text-emerald-800 shadow-sm">
+                      <span>Succeeded: {bulkResult.success_count}</span>
+                      <span>Failed: {bulkResult.errors?.length || 0}</span>
                     </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
+
+                    {bulkResult.errors && bulkResult.errors.length > 0 && (
+                      <div className="max-h-32 overflow-y-auto text-[10px] bg-red-50 border border-red-100 p-2.5 rounded-xl text-red-700 font-mono space-y-1.5">
+                        {bulkResult.errors.map((err, i) => (
+                          <div key={i} className="border-b border-red-200/50 pb-1 last:border-0 last:pb-0">{err}</div>
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Publish Semester Results Action Card */}
-        <div className="glass-panel p-6 space-y-4">
+        <div className="glass-panel p-6 space-y-5 bg-white/70 border-slate-200/50">
           <div className="flex items-center gap-2">
-            <span className="rounded-xl border p-2 text-rose-600 bg-rose-50 border-rose-100">
+            <span className="rounded-xl border border-rose-100 bg-rose-50 p-2 text-rose-600">
               <Award className="h-4 w-4" />
             </span>
-            <h3 className="text-base font-bold text-slate-800">Publish Results Engine</h3>
+            <h3 className="text-sm font-bold text-slate-800 heading-premium">Publish Results Engine</h3>
           </div>
 
           <form onSubmit={handlePublishResults} className="space-y-4">
@@ -387,42 +441,49 @@ export default function AdminMarksPage() {
                 value={publishStudentIdsStr}
                 onChange={(e) => setPublishStudentIdsStr(e.target.value)}
               />
-              <p className="text-[10px] text-slate-400">Leave blank to calculate results for all students in the semester.</p>
+              <p className="text-[10px] text-slate-400 mt-1">Leave blank to calculate results for all students in the semester.</p>
             </div>
 
-            <div className="rounded-xl border border-blue-100 bg-blue-50/40 p-3.5 text-xs text-slate-600 leading-relaxed">
+            <div className="rounded-xl border border-blue-100 bg-blue-50/40 p-3.5 text-xs text-slate-600 leading-relaxed font-medium">
               <strong>Execution Note:</strong> Publishing triggers backend SGPA/CGPA calculations, provisions marks transcripts, compiles result sheets, and stores PDF copies to S3.
             </div>
 
             <button
               type="submit"
               disabled={publishing}
-              className="btn-premium w-full bg-slate-900 hover:bg-slate-800 active:scale-[0.98]"
+              className="btn-premium w-full bg-slate-950 hover:bg-slate-900 active:scale-[0.98] mt-2 shadow-sm inline-flex items-center justify-center gap-2"
             >
-              {publishing ? 'Calculating & Syncing...' : 'Publish Semester Results'}
+              {publishing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Calculating & Syncing...</span>
+                </>
+              ) : (
+                <span>Publish Semester Results</span>
+              )}
             </button>
           </form>
         </div>
 
         {/* Live Metrics */}
-        <div className="glass-panel p-6 flex flex-col justify-between">
+        <div className="glass-panel p-6 flex flex-col justify-between bg-white/70 border-slate-200/50">
           <div>
-            <h4 className="font-bold text-slate-800 text-sm mb-4">Registry Summary</h4>
-            <div className="space-y-3">
+            <h4 className="font-bold text-slate-800 text-sm mb-4 heading-premium">Registry Summary</h4>
+            <div className="space-y-1">
               {[
                 { label: 'Total Posted Scores', val: marks.length },
                 { label: 'Registered Students', val: students.length },
                 { label: 'Exams Configured', val: exams.length },
                 { label: 'Active Semester Batches', val: semesters.length },
               ].map((item, i) => (
-                <div key={i} className="flex justify-between items-center text-xs py-2 border-b border-slate-100">
-                  <span className="text-slate-500">{item.label}</span>
-                  <span className="font-bold text-slate-800">{item.val}</span>
+                <div key={i} className="flex justify-between items-center text-xs py-2.5 border-b border-slate-100 last:border-0">
+                  <span className="text-slate-500 font-medium">{item.label}</span>
+                  <span className="font-extrabold text-slate-800">{item.val}</span>
                 </div>
               ))}
             </div>
           </div>
-          <div className="text-slate-400 text-[10px] text-center pt-4">
+          <div className="text-slate-400 text-[10px] text-center pt-6 font-medium">
             System logged database counts for students and exams.
           </div>
         </div>
@@ -431,10 +492,10 @@ export default function AdminMarksPage() {
       {/* Posted Marks List */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <span className="rounded-xl border p-2 text-indigo-600 bg-indigo-50 border-indigo-100">
+          <span className="rounded-xl border border-indigo-100 bg-indigo-50 p-2 text-indigo-600">
             <FileSpreadsheet className="h-4 w-4" />
           </span>
-          <h3 className="text-lg font-bold text-slate-800">Recorded Student Scores</h3>
+          <h3 className="text-lg font-bold text-slate-800 heading-premium">Recorded Student Scores</h3>
         </div>
 
         {loading ? (
@@ -452,7 +513,7 @@ export default function AdminMarksPage() {
                 render: (row) => (
                   <div>
                     <div className="font-bold text-slate-900">{row.student_name}</div>
-                    <div className="text-xs text-slate-500">{row.roll_number}</div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">{row.roll_number}</div>
                   </div>
                 ),
               },
@@ -468,7 +529,7 @@ export default function AdminMarksPage() {
                 header: 'Score',
                 render: (row) => (
                   <span className="font-mono font-bold text-slate-800">
-                    {row.marks_obtained} <span className="text-slate-400 font-normal">/ {row.max_marks}</span>
+                    {row.marks_obtained} <span className="text-slate-400 font-normal text-xs">/ {row.max_marks}</span>
                   </span>
                 ),
               },
@@ -477,20 +538,20 @@ export default function AdminMarksPage() {
                 key: 'actions',
                 header: 'Actions',
                 render: (row) => (
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 justify-end">
                     <button
                       onClick={() => setEditMark(row)}
-                      className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition"
+                      className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors"
                       title="Edit Marks"
                     >
-                      <Edit2 className="h-4 w-4" />
+                      <Edit2 className="h-3.5 w-3.5" />
                     </button>
                     <button
                       onClick={() => handleDeleteMark(row.id)}
-                      className="rounded-lg p-2 text-slate-500 hover:bg-red-50 hover:text-red-600 transition"
+                      className="rounded-lg p-2 text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors"
                       title="Delete Entry"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 ),
@@ -501,100 +562,122 @@ export default function AdminMarksPage() {
       </div>
 
       {/* Edit Marks Modal */}
-      {editMark && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setEditMark(null)} />
-          <div className="glass-panel relative z-10 w-full max-w-md p-6 bg-white shadow-2xl animate-scale-up">
-            <h3 className="text-lg font-bold text-slate-850 mb-4">Edit Marks Record</h3>
-
-            <form onSubmit={handleUpdateMark} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-500">Student</label>
-                <select
-                  required
-                  className="input-premium bg-white"
-                  value={editMark.student_id}
-                  onChange={(e) => setEditMark((prev) => ({ ...prev, student_id: e.target.value }))}
-                >
-                  {students.map((student) => (
-                    <option key={student.id} value={student.id}>
-                      {student.roll_number} - {student.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-500">Subject</label>
-                <select
-                  required
-                  className="input-premium bg-white"
-                  value={editMark.subject_id}
-                  onChange={(e) => setEditMark((prev) => ({ ...prev, subject_id: e.target.value }))}
-                >
-                  {subjects.map((subj) => (
-                    <option key={subj.id} value={subj.id}>
-                      {subj.code} - {subj.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-500">Examination Instance</label>
-                <select
-                  required
-                  className="input-premium bg-white"
-                  value={editMark.examination_id}
-                  onChange={(e) => setEditMark((prev) => ({ ...prev, examination_id: e.target.value }))}
-                >
-                  {exams.map((exam) => (
-                    <option key={exam.id} value={exam.id}>
-                      ID #{exam.id} - {exam.exam_type}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500">Obtained Marks</label>
-                  <input
-                    required
-                    type="number"
-                    className="input-premium"
-                    value={editMark.marks_obtained}
-                    onChange={(e) => setEditMark((prev) => ({ ...prev, marks_obtained: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500">Max Marks</label>
-                  <input
-                    required
-                    type="number"
-                    className="input-premium"
-                    value={editMark.max_marks}
-                    onChange={(e) => setEditMark((prev) => ({ ...prev, max_marks: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-2 justify-end pt-4">
+      <AnimatePresence>
+        {editMark && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-slate-950/20 backdrop-blur-sm"
+              onClick={() => setEditMark(null)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              className="glass-panel relative z-10 w-full max-w-md p-6 bg-white/95 shadow-2xl border-slate-200/60"
+            >
+              <div className="flex justify-between items-center mb-5 pb-2 border-b border-slate-100">
+                <h3 className="text-lg font-bold text-slate-900 heading-premium">Edit Marks Record</h3>
                 <button
-                  type="button"
                   onClick={() => setEditMark(null)}
-                  className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-50"
+                  className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
                 >
-                  Cancel
-                </button>
-                <button type="submit" className="btn-premium py-2 text-sm">
-                  Save Changes
+                  <X className="h-4 w-4" />
                 </button>
               </div>
-            </form>
+
+              <form onSubmit={handleUpdateMark} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-500">Student</label>
+                  <select
+                    required
+                    className="input-premium bg-white"
+                    value={editMark.student_id}
+                    onChange={(e) => setEditMark((prev) => ({ ...prev, student_id: e.target.value }))}
+                  >
+                    {students.map((student) => (
+                      <option key={student.id} value={student.id}>
+                        {student.roll_number} - {student.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-500">Subject</label>
+                  <select
+                    required
+                    className="input-premium bg-white"
+                    value={editMark.subject_id}
+                    onChange={(e) => setEditMark((prev) => ({ ...prev, subject_id: e.target.value }))}
+                  >
+                    {subjects.map((subj) => (
+                      <option key={subj.id} value={subj.id}>
+                        {subj.code} - {subj.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-500">Examination Instance</label>
+                  <select
+                    required
+                    className="input-premium bg-white"
+                    value={editMark.examination_id}
+                    onChange={(e) => setEditMark((prev) => ({ ...prev, examination_id: e.target.value }))}
+                  >
+                    {exams.map((exam) => (
+                      <option key={exam.id} value={exam.id}>
+                        ID #{exam.id} - {exam.exam_type}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-500">Obtained Marks</label>
+                    <input
+                      required
+                      type="number"
+                      className="input-premium"
+                      value={editMark.marks_obtained}
+                      onChange={(e) => setEditMark((prev) => ({ ...prev, marks_obtained: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-500">Max Marks</label>
+                    <input
+                      required
+                      type="number"
+                      className="input-premium"
+                      value={editMark.max_marks}
+                      onChange={(e) => setEditMark((prev) => ({ ...prev, max_marks: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2.5 justify-end pt-4 border-t border-slate-100 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => setEditMark(null)}
+                    className="btn-premium-secondary py-2 px-4 text-xs"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-premium py-2 px-4 text-xs shadow-md">
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   )
 }

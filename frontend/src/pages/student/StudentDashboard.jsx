@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { api } from '../../api/client'
 import toast from 'react-hot-toast'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   Award,
   TrendingUp,
@@ -8,6 +9,7 @@ import {
   PieChart,
   Calendar,
   Layers,
+  ChevronDown,
 } from 'lucide-react'
 import {
   BarChart,
@@ -71,9 +73,9 @@ export default function StudentDashboard() {
 
   if (loading) {
     return (
-      <div className="flex h-96 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent"></div>
-        <span className="ml-3 text-slate-500 font-medium">Loading your profile & grades...</span>
+      <div className="flex h-96 flex-col items-center justify-center space-y-4">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-500 border-t-transparent"></div>
+        <span className="text-slate-500 font-medium text-sm animate-pulse">Loading your profile & grades...</span>
       </div>
     )
   }
@@ -119,132 +121,170 @@ export default function StudentDashboard() {
     CGPA: h.cgpa,
   }))
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+      },
+    },
+  }
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 12 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 260, damping: 25 } },
+  }
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+    <div className="space-y-8">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Welcome, {profile?.name}!</h1>
-          <p className="text-sm text-slate-500">Roll No: {profile?.roll_number} | {profile?.course_name} ({profile?.department_name})</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 heading-premium">Welcome, {profile?.name}!</h1>
+          <p className="text-sm text-slate-500 font-medium mt-1">Roll No: {profile?.roll_number} | {profile?.course_name} ({profile?.department_name})</p>
         </div>
 
-        {/* Semester Selector if semesters metadata loaded */}
-        <div className="flex items-center gap-2">
+        {/* Semester Selector */}
+        <div className="flex items-center gap-2 relative">
           <Calendar className="h-4 w-4 text-slate-400" />
-          <select
-            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-brand-500 font-medium"
-            value={selectedSemId}
-            onChange={handleSemesterChange}
-          >
-            <option value="">Default Semester</option>
-            {semesters
-              .filter((s) => s.course_id === profile?.course_id || semesters.length > 0) // filter relevant course semesters
-              .map((s) => (
-                <option key={s.id} value={s.id}>
-                  Semester {s.number}
-                </option>
-              ))}
-          </select>
+          <div className="relative">
+            <select
+              className="appearance-none rounded-xl border border-slate-200/80 bg-white pl-3.5 pr-8 py-2 text-sm text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 cursor-pointer font-semibold"
+              value={selectedSemId}
+              onChange={handleSemesterChange}
+            >
+              <option value="">Default Semester</option>
+              {semesters
+                .filter((s) => s.course_id === profile?.course_id || semesters.length > 0)
+                .map((s) => (
+                  <option key={s.id} value={s.id}>
+                    Semester {s.number}
+                  </option>
+                ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400">
+              <ChevronDown className="h-4 w-4" />
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <section className="grid gap-5 grid-cols-2 md:grid-cols-5">
+      <motion.section
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="grid gap-5 grid-cols-2 md:grid-cols-5"
+      >
         {[
-          { label: 'Total Score', value: `${totalObtained}/${totalMax}`, icon: BookOpen, color: 'text-indigo-600 bg-indigo-50 border-indigo-100' },
-          { label: 'Percentage', value: `${overallPercentage.toFixed(2)}%`, icon: PieChart, color: 'text-amber-600 bg-amber-50 border-amber-100' },
-          { label: 'Letter Grade', value: grade, icon: Award, color: 'text-emerald-600 bg-emerald-50 border-emerald-100' },
-          { label: 'SGPA', value: currentSGPA, icon: TrendingUp, color: 'text-rose-600 bg-rose-50 border-rose-100' },
-          { label: 'CGPA', value: currentCGPA, icon: Layers, color: 'text-sky-600 bg-sky-50 border-sky-100' },
+          { label: 'Total Score', value: totalMax > 0 ? `${totalObtained}/${totalMax}` : 'N/A', icon: BookOpen, color: 'text-violet-600 bg-violet-50 border-violet-100/50' },
+          { label: 'Percentage', value: totalMax > 0 ? `${overallPercentage.toFixed(2)}%` : 'N/A', icon: PieChart, color: 'text-amber-600 bg-amber-50 border-amber-100/50' },
+          { label: 'Letter Grade', value: grade, icon: Award, color: 'text-emerald-600 bg-emerald-50 border-emerald-100/50' },
+          { label: 'SGPA', value: currentSGPA, icon: TrendingUp, color: 'text-rose-600 bg-rose-50 border-rose-100/50' },
+          { label: 'CGPA', value: currentCGPA, icon: Layers, color: 'text-sky-600 bg-sky-50 border-sky-100/50' },
         ].map((stat, i) => {
           const Icon = stat.icon
           return (
-            <div key={i} className="glass-panel p-5 flex flex-col justify-between hover:scale-[1.02] transition-transform duration-200">
+            <motion.div
+              variants={cardVariants}
+              key={i}
+              className="glass-panel p-5 flex flex-col justify-between hover:border-brand-500/20 hover:shadow-soft transition-all duration-300 bg-white/70 border-slate-200/50"
+            >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{stat.label}</span>
-                <span className={`rounded-xl border p-2 ${stat.color}`}>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</span>
+                <span className={`rounded-xl border p-2 shrink-0 ${stat.color}`}>
                   <Icon className="h-4 w-4" />
                 </span>
               </div>
-              <div className="mt-4">
-                <span className="text-xl font-extrabold text-slate-800">{stat.value}</span>
+              <div className="mt-5">
+                <span className="text-xl font-extrabold text-slate-900 heading-premium">{stat.value}</span>
               </div>
-            </div>
+            </motion.div>
           )
         })}
-      </section>
+      </motion.section>
 
       {/* Visual Analytics */}
       <section className="grid gap-6 md:grid-cols-2">
         {/* Subject wise marks */}
-        <div className="glass-panel p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <span className="rounded-xl border p-2 text-indigo-600 bg-indigo-50 border-indigo-100">
+        <div className="glass-panel p-5 space-y-5 bg-white/70 border-slate-200/50">
+          <div className="flex items-center gap-3">
+            <span className="rounded-xl border border-indigo-100 bg-indigo-50 p-2 text-indigo-600">
               <BookOpen className="h-4 w-4" />
             </span>
             <div>
-              <h3 className="text-base font-bold text-slate-800">Subject Wise Performance</h3>
+              <h3 className="text-base font-bold text-slate-800 heading-premium">Subject Wise Performance</h3>
               <p className="text-xs text-slate-400">Score comparison in current semester subjects.</p>
             </div>
           </div>
-          <div className="h-80 w-full pt-4">
+          <div className="h-80 w-full pt-2">
             {barChartData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={barChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <BarChart data={barChartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="subject" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                  <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} />
+                  <XAxis dataKey="subject" stroke="#94a3b8" fontSize={10} tickLine={false} />
+                  <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} />
                   <Tooltip
+                    cursor={{ fill: 'rgba(99, 102, 241, 0.03)' }}
                     contentStyle={{
                       backgroundColor: 'rgba(255, 255, 255, 0.95)',
                       borderRadius: '16px',
-                      border: '1px solid #e2e8f0',
-                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05)',
+                      border: '1px solid rgba(226, 232, 240, 0.8)',
+                      boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05)',
+                      backdropFilter: 'blur(8px)',
                     }}
                   />
-                  <Legend verticalAlign="top" height={36} />
-                  <Bar dataKey="Score" fill="#6366f1" radius={[8, 8, 0, 0]} barSize={28} name="Obtained Marks" />
-                  <Bar dataKey="Max" fill="#cbd5e1" radius={[8, 8, 0, 0]} barSize={28} name="Max Marks" />
+                  <Legend verticalAlign="top" height={36} iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, color: '#475569' }} />
+                  <Bar dataKey="Score" fill="url(#violetGradient)" radius={[5, 5, 0, 0]} barSize={20} name="Obtained Marks" />
+                  <Bar dataKey="Max" fill="#e2e8f0" radius={[5, 5, 0, 0]} barSize={20} name="Max Marks" />
+                  <defs>
+                    <linearGradient id="violetGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#8b5cf6" />
+                      <stop offset="100%" stopColor="#6366f1" />
+                    </linearGradient>
+                  </defs>
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-full items-center justify-center text-xs text-slate-400">No subject marks recorded for this semester.</div>
+              <div className="flex h-full items-center justify-center text-xs text-slate-400 font-medium">No subject marks recorded for this semester.</div>
             )}
           </div>
         </div>
 
         {/* CGPA History trend */}
-        <div className="glass-panel p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <span className="rounded-xl border p-2 text-rose-600 bg-rose-50 border-rose-100">
+        <div className="glass-panel p-5 space-y-5 bg-white/70 border-slate-200/50">
+          <div className="flex items-center gap-3">
+            <span className="rounded-xl border border-rose-100 bg-rose-50 p-2 text-rose-600">
               <TrendingUp className="h-4 w-4" />
             </span>
             <div>
-              <h3 className="text-base font-bold text-slate-800">Academic CGPA / SGPA Progression</h3>
+              <h3 className="text-base font-bold text-slate-800 heading-premium">Academic CGPA / SGPA Progression</h3>
               <p className="text-xs text-slate-400">Historical performance trend over semesters.</p>
             </div>
           </div>
-          <div className="h-80 w-full pt-4">
+          <div className="h-80 w-full pt-2">
             {lineChartData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={lineChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <LineChart data={lineChartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="Semester" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                  <YAxis domain={[0, 10]} stroke="#94a3b8" fontSize={11} tickLine={false} />
+                  <XAxis dataKey="Semester" stroke="#94a3b8" fontSize={10} tickLine={false} />
+                  <YAxis domain={[0, 10]} stroke="#94a3b8" fontSize={10} tickLine={false} />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'rgba(255, 255, 255, 0.95)',
                       borderRadius: '16px',
-                      border: '1px solid #e2e8f0',
-                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05)',
+                      border: '1px solid rgba(226, 232, 240, 0.8)',
+                      boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05)',
+                      backdropFilter: 'blur(8px)',
                     }}
                   />
-                  <Legend verticalAlign="top" height={36} />
-                  <Line type="monotone" dataKey="SGPA" stroke="#f43f5e" strokeWidth={3} dot={{ r: 4 }} name="SGPA" />
-                  <Line type="monotone" dataKey="CGPA" stroke="#10b981" strokeWidth={3} dot={{ r: 4 }} name="CGPA" />
+                  <Legend verticalAlign="top" height={36} iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, color: '#475569' }} />
+                  <Line type="monotone" dataKey="SGPA" stroke="#f43f5e" strokeWidth={3} dot={{ r: 3, strokeWidth: 2, fill: '#fff' }} name="SGPA" />
+                  <Line type="monotone" dataKey="CGPA" stroke="#10b981" strokeWidth={3} dot={{ r: 3, strokeWidth: 2, fill: '#fff' }} name="CGPA" />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-full items-center justify-center text-xs text-slate-400">No calculation records found in academic history.</div>
+              <div className="flex h-full items-center justify-center text-xs text-slate-400 font-medium">No calculation records found in academic history.</div>
             )}
           </div>
         </div>

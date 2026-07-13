@@ -12,7 +12,6 @@ import ForcePasswordReset from './pages/ForcePasswordReset'
 
 // Admin Views
 import AdminDashboard from './pages/admin/AdminDashboard'
-import AdminLogsPage from './pages/admin/AdminLogsPage'
 import AdminMarksPage from './pages/admin/AdminMarksPage'
 import AdminStudentsPage from './pages/admin/AdminStudentsPage'
 import AdminDepartmentsPage from './pages/admin/AdminDepartmentsPage'
@@ -73,7 +72,6 @@ export default function App() {
           <Route path="subjects" element={<AdminSubjectsPage />} />
           <Route path="semesters" element={<AdminSemestersPage />} />
           <Route path="exams" element={<AdminExamsPage />} />
-          <Route path="logs" element={<AdminLogsPage />} />
         </Route>
 
         <Route
