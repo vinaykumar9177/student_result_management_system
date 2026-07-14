@@ -50,6 +50,8 @@ def seed_demo_data(db: Session) -> None:
         db.add(student_user)
         db.flush()
     else:
+        student_user.role = UserRole.student
+        student_user.hashed_password = get_password_hash("Student@1234")
         student_user.must_reset_password = False
 
     student = db.query(Student).filter(Student.user_id == student_user.id).first()
