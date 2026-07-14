@@ -30,6 +30,7 @@ def seed_demo_data(db: Session) -> None:
             email="admin@demo.com",
             hashed_password=get_password_hash("Admin@1234"),
             role=UserRole.admin,
+            is_active=True,
             must_reset_password=False,
         )
         db.add(admin)
@@ -37,6 +38,7 @@ def seed_demo_data(db: Session) -> None:
     else:
         admin.role = UserRole.admin
         admin.hashed_password = get_password_hash("Admin@1234")
+        admin.is_active = True
         admin.must_reset_password = False
 
     student_user = db.query(User).filter(User.email == "student@demo.com").first()
@@ -45,6 +47,7 @@ def seed_demo_data(db: Session) -> None:
             email="student@demo.com",
             hashed_password=get_password_hash("Student@1234"),
             role=UserRole.student,
+            is_active=True,
             must_reset_password=False,
         )
         db.add(student_user)
@@ -52,6 +55,7 @@ def seed_demo_data(db: Session) -> None:
     else:
         student_user.role = UserRole.student
         student_user.hashed_password = get_password_hash("Student@1234")
+        student_user.is_active = True
         student_user.must_reset_password = False
 
     student = db.query(Student).filter(Student.user_id == student_user.id).first()
