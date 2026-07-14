@@ -8,7 +8,7 @@ import { PlusCircle, Edit2, Trash2, Calendar, RefreshCw, X } from 'lucide-react'
 const emptyForm = {
   subject_id: '',
   semester_id: '',
-  exam_type: 'final',
+  exam_type: 'internal',
   exam_date: '',
 }
 
@@ -166,10 +166,8 @@ export default function AdminExamsPage() {
                 value={form.exam_type}
                 onChange={(e) => setForm((prev) => ({ ...prev, exam_type: e.target.value }))}
               >
-                <option value="final">Final Exam</option>
-                <option value="midterm">Midterm</option>
-                <option value="quiz">Quiz</option>
-                <option value="assignment">Assignment</option>
+                <option value="internal">Internal Exam</option>
+                <option value="external">External Exam</option>
               </select>
             </div>
 
@@ -228,10 +226,8 @@ export default function AdminExamsPage() {
                   header: 'Type',
                   render: (row) => {
                     let typeColor = 'bg-slate-100 text-slate-700'
-                    if (row.exam_type === 'final') typeColor = 'bg-violet-50 text-violet-700 border-violet-100'
-                    if (row.exam_type === 'midterm') typeColor = 'bg-indigo-50 text-indigo-700 border-indigo-100'
-                    if (row.exam_type === 'quiz') typeColor = 'bg-amber-50 text-amber-700 border-amber-100'
-                    if (row.exam_type === 'assignment') typeColor = 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                    if (row.exam_type === 'internal') typeColor = 'bg-indigo-50 text-indigo-700 border-indigo-100'
+                    if (row.exam_type === 'external') typeColor = 'bg-violet-50 text-violet-700 border-violet-100'
 
                     return (
                       <span className={`badge-premium border capitalize ${typeColor}`}>
@@ -338,10 +334,8 @@ export default function AdminExamsPage() {
                     value={editExam.exam_type}
                     onChange={(e) => setEditExam((prev) => ({ ...prev, exam_type: e.target.value }))}
                   >
-                    <option value="final">Final Exam</option>
-                    <option value="midterm">Midterm</option>
-                    <option value="quiz">Quiz</option>
-                    <option value="assignment">Assignment</option>
+                    <option value="internal">Internal Exam</option>
+                    <option value="external">External Exam</option>
                   </select>
                 </div>
 

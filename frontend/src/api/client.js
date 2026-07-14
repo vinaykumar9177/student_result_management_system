@@ -25,9 +25,24 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+const formatDetail = (detail) => {
+  if (Array.isArray(detail)) {
+    return detail
+      .map((err) => {
+        const field = err.loc ? err.loc.filter((l) => l !== 'body').join('.') : 'field'
+        return `${field ? field + ': ' : ''}${err.msg}`
+      })
+      .join(', ')
+  }
+  return detail
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    if (error.response?.data?.detail) {
+      error.response.data.detail = formatDetail(error.response.data.detail)
+    }
     const originalRequest = error.config
     if (error.response?.status !== 401 || originalRequest._retry) {
       return Promise.reject(error)

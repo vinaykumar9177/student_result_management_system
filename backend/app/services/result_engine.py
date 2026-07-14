@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
 from typing import Iterable, Any
 
@@ -130,7 +130,7 @@ class ResultEngine:
                 ])
 
             pdf_bytes = generate_result_pdf(
-                student.name, student.roll_number, semester.number, summary.__dict__, subject_rows
+                student.name, student.roll_number, semester.number, asdict(summary), subject_rows
             )
             pdf_key = f"results/{student.roll_number}/semester-{semester.number}.pdf"
             pdf_url = upload_bytes(pdf_key, pdf_bytes, "application/pdf")
